@@ -2,18 +2,23 @@ import os
 import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 import google.generativeai as genai
 
-API_KEY = os.getenv("GEMINI_API_KEY") or "YOUR_API_KEY_HERE"
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is not set")
+
+genai.configure(api_key=GEMINI_API_KEY)
 
 app = Flask(__name__)
 CORS(app)
 
-genai.configure(api_key=API_KEY)
-
 @app.get("/")
 def home():
-    return {"status": "ok", "service": "GeoPulse"}
+    return {"status": "ok", "service": "GeoPulse API"}
 
 @app.get("/api/events")
 def events():
@@ -34,6 +39,14 @@ def events():
             "date": "2026-01-02",
             "regions": ["Eastern Europe", "Russia"],
         },
+        {
+            "id": 3,
+            "title": "US-China Trade Tensions",
+            "description": "New tariff announcements affect global trade",
+            "severity": "medium",
+            "date": "2026-01-01",
+            "regions": ["USA", "China", "Global"],
+        },
     ]
 
 @app.post("/api/analyze")
@@ -41,6 +54,7 @@ def analyze():
     body = request.json or {}
     event = body.get("event", "")
     location = body.get("location", "India")
+
     if not event:
         return {"error": "event is required"}, 400
 
@@ -82,4 +96,4 @@ Return ONLY JSON like:
     }
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
