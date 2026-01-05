@@ -1,8 +1,8 @@
 # G.I.A.-Protocol
 ## Live Demo
 
-- Frontend (GitHub Pages): https://ananya-prasad-hub.github.io/g](https://ananya-prasad-hub.github.io/G.I.A.-Protocol/
-- Backend (Railway): https://geopulse-api.up.railway.app](https://gia-protocol-production.up.railway.app/
+- Frontend (GitHub Pages): https://ananya-prasad-hub.github.io/G.I.A.-Protocol/
+- Backend (Railway): https://gia-protocol-production.up.railway.app/
 
 ## How it works
 
