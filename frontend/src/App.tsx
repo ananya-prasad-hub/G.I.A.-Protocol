@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -183,3 +184,21 @@ function App() {
 }
 
 export default App;
+=======
+import { API_BASE } from "./config";
+
+// events
+useEffect(() => {
+  fetch(`${API_BASE}/api/events`)
+    .then((r) => r.json())
+    .then(setEvents)
+    .catch(console.error);
+}, []);
+
+// analyze
+const res = await fetch(`${API_BASE}/api/analyze`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ event: ..., location }),
+});
+>>>>>>> 74ba842fb3b852e398aeb19fd19a595633cb201d
