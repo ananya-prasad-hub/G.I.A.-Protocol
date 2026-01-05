@@ -74,7 +74,7 @@ Return ONLY JSON like:
 }}
 """
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash-001")
     resp = model.generate_content(prompt)
     text = resp.text.strip()
 
