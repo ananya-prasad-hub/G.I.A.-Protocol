@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
+const API_BASE = "https://gia-protocol-production.up.railway.app";
+
 interface Event {
   id: number;
   title: string;
@@ -10,69 +12,33 @@ interface Event {
   regions: string[];
 }
 
-interface ImpactData {
-  severity: number;
-  timeframe: string;
-  example: string;
-  impact_description: string;
-}
-
-interface ImpactResponse {
-  event: string;
-  location: string;
-  impacts: Record<string, ImpactData>;
-  overall_severity: number;
-}
-
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [impacts, setImpacts] = useState<ImpactResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [location, setLocation] = useState("India");
-
-  // YOUR RAILWAY BACKEND URL
-  const API_BASE = "https://gia-protocol-production.up.railway.app";
+  const [error, setError] = useState("");
+  const [loadingEvents, setLoadingEvents] = useState(true);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/events`)
-      .then((r) => r.json())
-      .then(setEvents)
-      .catch((err) => console.error("Error fetching events:", err));
-  }, [API_BASE]);
-
-  const handleAnalyzeEvent = async (event: Event) => {
-    setSelectedEvent(event);
-    setLoading(true);
-    setImpacts(null);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event: `${event.title}: ${event.description}`,
-          location,
-        }),
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log("Events loaded:", data);
+        setEvents(Array.isArray(data) ? data : []);
+        setLoadingEvents(false);
+      })
+      .catch(err => {
+        console.error("Backend error:", err);
+        setError("Backend not responding. Check https://gia-protocol-production.up.railway.app/api/events");
+        setLoadingEvents(false);
       });
+  }, []);
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      
-      const data: ImpactResponse = await res.json();
-      setImpacts(data);
-    } catch (e) {
-      console.error("Analysis failed:", e);
-      alert("Failed to analyze event. Check browser console (F12).");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getSeverityColor = (severity: number) => {
-    if (severity >= 7) return "#ff4444";
-    if (severity >= 4) return "#ff9900";
-    return "#44aa44";
-  };
+  const fallbackEvents: Event[] = [
+    { id: 1, title: "Middle East Tensions", description: "Gulf region activity", severity: "high", date: "2026-01-05", regions: ["Middle East"] },
+    { id: 2, title: "Ukraine Updates", description: "Eastern Europe operations", severity: "high", date: "2026-01-04", regions: ["Europe"] },
+  ];
 
   return (
     <div className="app">
@@ -83,43 +49,40 @@ function App() {
 
       <div className="container">
         <div className="left-panel">
-          <div className="location-selector">
-            <label>📍 Select Location:</label>
-            <select 
-              value={location} 
-              onChange={(e) => setLocation(e.target.value)}
-            >
-              <option>India</option>
-              <option>USA</option>
-              <option>Europe</option>
-              <option>China</option>
-              <option>Global</option>
-            </select>
-          </div>
-
           <h2>🌍 Recent Events</h2>
-          {events.length === 0 ? (
+          
+          {error && (
+            <div style={{ color: "#ff4444", padding: "1rem", background: "rgba(255,68,68,0.1)" }}>
+              ❌ {error}
+              <br />
+              <small>Backend: <a href={`${API_BASE}/api/events`} target="_blank">Test API</a></small>
+            </div>
+          )}
+
+          {loadingEvents ? (
             <div className="empty-state">Loading events...</div>
-          ) : (
+          ) : events.length > 0 ? (
             <div className="events-list">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className={`event-card ${selectedEvent?.id === event.id ? "active" : ""}`}
-                  onClick={() => handleAnalyzeEvent(event)}
-                >
+              {events.map(event => (
+                <div key={event.id} className="event-card">
                   <h3>{event.title}</h3>
                   <p>{event.description}</p>
                   <div className="event-meta">
-                    <span className={`severity ${event.severity}`}>
-                      {event.severity.toUpperCase()}
-                    </span>
+                    <span className={`severity ${event.severity}`}>{event.severity.toUpperCase()}</span>
                     <span className="date">{event.date}</span>
                   </div>
-                  <div className="regions">
-                    {event.regions.map((region) => (
-                      <span key={region} className="region">{region}</span>
-                    ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="events-list">
+              {fallbackEvents.map(event => (
+                <div key={event.id} className="event-card">
+                  <h3>{event.title} (Demo)</h3>
+                  <p>{event.description}</p>
+                  <div className="event-meta">
+                    <span className={`severity ${event.severity}`}>{event.severity.toUpperCase()}</span>
+                    <span className="date">{event.date}</span>
                   </div>
                 </div>
               ))}
@@ -128,54 +91,10 @@ function App() {
         </div>
 
         <div className="right-panel">
-          {loading && <div className="loading">🤖 Analyzing with Gemini AI...</div>}
-
-          {impacts && !loading && (
-            <div className="impacts-panel">
-              <h2>📊 Impact Analysis for {impacts.location}</h2>
-              <p className="event-analyzed">{impacts.event}</p>
-
-              <div className="severity-meter">
-                <div className="meter-label">Overall Impact Severity</div>
-                <div className="meter-bar">
-                  <div
-                    className="meter-fill"
-                    style={{
-                      width: `${(impacts.overall_severity / 10) * 100}%`,
-                      backgroundColor: getSeverityColor(impacts.overall_severity),
-                    }}
-                  />
-                </div>
-                <div className="meter-value">
-                  {impacts.overall_severity.toFixed(1)}/10
-                </div>
-              </div>
-
-              <div className="impacts-grid">
-                {Object.entries(impacts.impacts).map(([category, data]) => (
-                  <div
-                    key={category}
-                    className="impact-card"
-                    style={{ borderLeftColor: getSeverityColor(data.severity) }}
-                  >
-                    <h3>{category.toUpperCase()}</h3>
-                    <div className="severity-indicator">
-                      Severity: <strong>{data.severity}/10</strong>
-                    </div>
-                    <p><strong>Timeframe:</strong> {data.timeframe}</p>
-                    <p><strong>Example:</strong> {data.example}</p>
-                    <p className="description">{data.impact_description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!impacts && !loading && (
-            <div className="empty-state">
-              👈 Click on an event to see AI-powered impact analysis
-            </div>
-          )}
+          <div className="empty-state">
+            👈 Click events above for AI analysis<br/>
+            <small>(Backend must be working)</small>
+          </div>
         </div>
       </div>
     </div>
