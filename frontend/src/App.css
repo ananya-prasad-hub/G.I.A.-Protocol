@@ -3,7 +3,12 @@
 html, body, #root {
   width: 100vw !important;
   height: 100vh !important;
-  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body {
   font-family: system-ui, sans-serif;
   background: #0f172a;
   color: #e2e8f0;
@@ -14,7 +19,6 @@ html, body, #root {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 .header {
@@ -25,8 +29,8 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-.header h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); color: white; margin: 0 0 0.5rem 0; }
-.header p { color: rgba(255,255,255,0.9); font-size: 1.1rem; }
+.header h1 { font-size: clamp(1.8rem, 5vw, 3rem); color: white; margin: 0 0 0.5rem 0; }
+.header p { color: rgba(255,255,255,0.9); font-size: clamp(1rem, 3vw, 1.2rem); }
 
 .container {
   flex: 1;
@@ -35,7 +39,6 @@ html, body, #root {
   gap: 1rem;
   padding: 1.5rem;
   overflow: hidden;
-  max-width: 100%;
 }
 
 .left-panel, .right-panel {
@@ -44,7 +47,6 @@ html, body, #root {
   padding: 1.5rem;
   border: 1px solid rgba(148,163,184,0.2);
   overflow-y: auto;
-  height: 100%;
 }
 
 .events-list {
@@ -63,30 +65,45 @@ html, body, #root {
   transition: all 0.3s;
 }
 
-.event-card:hover { 
+.event-card:hover {
   background: rgba(14,165,233,0.2);
   border-color: #0ea5e9;
-  transform: translateX(4px);
 }
 
-.impacts-grid { display: grid; gap: 1rem; }
-.impact-card { 
-  padding: 1rem; 
-  background: rgba(15,23,42,0.8); 
-  border: 1px solid rgba(148,163,184,0.1); 
-  border-radius: 8px; 
-}
+.event-card h3 { color: #0ea5e9; margin-bottom: 0.5rem; }
+.event-card p { color: #94a3b8; margin-bottom: 1rem; font-size: 0.9rem; }
 
-.loading, .empty-state {
+.event-meta {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.severity {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.severity.high { background: rgba(255,68,68,0.2); color: #ff4444; }
+.severity.medium { background: rgba(255,153,0,0.2); color: #ff9900; }
+
+.date { color: #64748b; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 60vh;
-  font-size: 1.2rem;
+  text-align: center;
   color: #94a3b8;
+  font-size: 1.1rem;
 }
 
-/* RESPONSIVE */
 @media (max-width: 1200px) {
   .container { 
     grid-template-columns: 1fr; 
